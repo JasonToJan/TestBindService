@@ -7,11 +7,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.meizu.statsapp.v3.utils.log.Logger;
 import com.meizu.statsrpk.IRpkStatsInterface;
 import com.meizu.statsrpk.service.RpkUsageStatsService;
 
@@ -51,20 +53,47 @@ public class Process2Activity extends AppCompatActivity {
 
     private void startMyService(View view) { //此方法是单线程调用的
 
-        Intent intent = new Intent(this, RpkUsageStatsService.class);
+        RpkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
+
+        Intent intent = new Intent(Process2Activity.this, RpkUsageStatsService.class);
         serviceConn = new ServiceConn();
         boolean result = bindService(intent, serviceConn, Context.BIND_AUTO_CREATE);
         LogUtils.d(TAG, "bindService, " + serviceConn + " result: " + result);
         if (result) {
+
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Logger.d(TAG, "延迟消息开始了");
+                    synchronized (this) {
+                        if (serviceConn != null) {
+                            Logger.d(TAG, "notifyAll");
+                            serviceConn.notifyAll();
+                        }
+                    }
+                }
+            },10000);
+
             synchronized (serviceConn) {
                 try {
+                    Logger.d(TAG, "wait开始了");
                     serviceConn.wait();
+                    Logger.d(TAG, "wait结束了");
                 } catch (InterruptedException e) {
                     LogUtils.w(TAG, "Exception:" + e.toString() + " -Cause:" + e.getCause());
                 }
             }
         }
         LogUtils.d(TAG, "finished wait bindService 2" + serviceConn + " result: " + result);
+
+
+
     }
 
     public void stopBtn(View view) {
@@ -95,7 +124,7 @@ public class Process2Activity extends AppCompatActivity {
 
             if (action.equals(START_RPK_SERVICE)) {
 
-                //startMyService(null);
+                startMyService(null);
 
             } else if (action.equals(STOP_RPK_SERVICE)) {
 

@@ -18,7 +18,7 @@ import com.meizu.statsrpk.service.RpkUsageStatsService;
  **/
 public class MyService extends Service {
 
-    private String TAG = "TEST##"+ RpkUsageStatsService.class.getSimpleName();
+    private String TAG = "TEST##"+ MyService.class.getSimpleName();
 //    private IInterface rpkStatsInterface;
 
     @Override
