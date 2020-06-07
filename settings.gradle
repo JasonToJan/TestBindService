@@ -1,0 +1,3 @@
+rootProject.name='TestExample'
+include ':app'
+include ':statsrpk'
